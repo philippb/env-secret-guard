@@ -1,6 +1,6 @@
-# Secret Scanner
+# Env Secret Guard
 
-Secret Scanner prevents accidental commits of secrets by scanning files for exact values found in your `.env` files. It is designed for use in Git hooks and CI, and intentionally keeps the detection model simple, fast, and explainable.
+Env Secret Guard prevents accidental commits of secrets by scanning files for exact values found in your `.env` files. It is designed for use in Git hooks and CI, and intentionally keeps the detection model simple, fast, and explainable.
 
 ## Features
 
@@ -12,22 +12,22 @@ Secret Scanner prevents accidental commits of secrets by scanning files for exac
 ## Install
 
 ```bash
-pnpm add -D secret-scanner
+pnpm add -D @philippb/env-secret-guard
 ```
 
 Or run once without installing:
 
 ```bash
-pnpm dlx secret-scanner scan --staged
+pnpm dlx @philippb/env-secret-guard scan --staged
 ```
 
 ## Usage
 
 ```bash
-secret-scanner scan --staged
-secret-scanner scan --all
-secret-scanner scan --all --include-untracked
-secret-scanner scan --paths src apps/api
+secret-scan scan --staged
+secret-scan scan --all
+secret-scan scan --all --include-untracked
+secret-scan scan --paths src apps/api
 ```
 
 ### Redaction
@@ -35,9 +35,9 @@ secret-scanner scan --paths src apps/api
 Redaction replaces exact secret values with a safe placeholder. Dry-run is the default; use `--apply` to write changes.
 
 ```bash
-secret-scanner redact --all --dry-run
-secret-scanner redact --all --apply
-secret-scanner redact --paths src apps/api --dry-run
+secret-scan redact --all --dry-run
+secret-scan redact --all --apply
+secret-scan redact --paths src apps/api --dry-run
 ```
 
 Redaction does not rewrite git history. If secrets were committed previously, rotate them and clean history separately.
@@ -45,10 +45,18 @@ Redaction does not rewrite git history. If secrets were committed previously, ro
 ### Git Hook (Husky)
 
 ```bash
-pnpm exec secret-scanner scan --staged
+pnpm exec secret-scan scan --staged
 ```
 
 For full setup instructions (Husky and plain Git hooks), see `docs/git-hooks.md`.
+
+### CLI Reference
+
+Generate `--help` documentation:
+
+```bash
+pnpm run docs
+```
 
 ### Exit Codes
 
@@ -58,11 +66,11 @@ For full setup instructions (Husky and plain Git hooks), see `docs/git-hooks.md`
 
 ## Configuration
 
-Secret Scanner works out of the box by reading `.env` and `.env.*` in the repo root (excluding `.env.example`). This mirrors how most projects already store secrets and avoids keeping an explicit list of secret files.
+Env Secret Guard works out of the box by reading `.env` and `.env.*` in the repo root (excluding `.env.example`). This mirrors how most projects already store secrets and avoids keeping an explicit list of secret files.
 
 If you need custom behavior, add a config file in the repo root:
 
-`secret-scanner.config.json` or `.secret-scanner.json`
+`secret-scan.config.json` or `.secret-scan.json`
 
 Example:
 
@@ -83,13 +91,13 @@ Example:
 You can also point to a specific config file:
 
 ```bash
-secret-scanner --config path/to/config.json scan --staged
+secret-scan --config path/to/config.json scan --staged
 ```
 
 Or via environment variable:
 
 ```bash
-SECRET_SCANNER_CONFIG=path/to/config.json secret-scanner scan --staged
+SECRET_SCAN_CONFIG=path/to/config.json secret-scan scan --staged
 ```
 
 ## Output Modes

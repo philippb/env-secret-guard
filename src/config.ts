@@ -76,7 +76,7 @@ export const DEFAULT_CONFIG: Required<SecretScannerConfig> = {
   binaryExtensions: DEFAULT_BINARY_EXTENSIONS,
 };
 
-const PROJECT_CONFIG_FILES = ['secret-scanner.config.json', '.secret-scanner.json'];
+const PROJECT_CONFIG_FILES = ['secret-scan.config.json', '.secret-scan.json'];
 
 function readJsonConfig(filePath: string): SecretScannerConfig {
   const raw = fs.readFileSync(filePath, 'utf-8');
@@ -118,9 +118,9 @@ function mergeConfig(
 function resolveUserConfigPath(): string {
   const xdg = process.env.XDG_CONFIG_HOME;
   if (xdg) {
-    return path.join(xdg, 'secret-scanner', 'config.json');
+    return path.join(xdg, 'secret-scan', 'config.json');
   }
-  return path.join(os.homedir(), '.config', 'secret-scanner', 'config.json');
+  return path.join(os.homedir(), '.config', 'secret-scan', 'config.json');
 }
 
 function findProjectConfigPath(cwd: string): string | null {
@@ -137,7 +137,8 @@ export function loadConfig(options: { cwd: string; configPath?: string }): Loade
   const sources: string[] = [];
   let config = DEFAULT_CONFIG;
 
-  const explicitPath = options.configPath || process.env.SECRET_SCANNER_CONFIG;
+  const explicitPath =
+    options.configPath || process.env.SECRET_SCAN_CONFIG || process.env.SECRET_SCANNER_CONFIG;
   if (explicitPath) {
     const resolved = path.resolve(options.cwd, explicitPath);
     if (!fs.existsSync(resolved)) {

@@ -1,12 +1,12 @@
 {
-  "name": "secret-scanner",
+  "name": "@philippb/env-secret-guard",
   "version": "0.1.0",
   "description": "Prevent committing secrets by scanning files for values found in .env files.",
   "license": "MIT",
   "author": "Philipp",
   "type": "commonjs",
   "bin": {
-    "secret-scanner": "dist/cli.js"
+    "secret-scan": "dist/cli.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,6 +21,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsx src/cli.ts",
+    "docs": "tsx scripts/generate-docs.ts",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
