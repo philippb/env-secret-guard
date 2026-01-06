@@ -1,6 +1,7 @@
 # Env Secret Guard
 
 [![npm version](https://img.shields.io/npm/v/@philippb/env-secret-guard)](https://www.npmjs.com/package/@philippb/env-secret-guard)
+[![CI](https://github.com/philippb/env-secret-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/philippb/env-secret-guard/actions/workflows/ci.yml)
 
 Env Secret Guard prevents accidental commits of secrets by scanning files for exact values found in your `.env` files. It is designed for use in Git hooks and CI, and intentionally keeps the detection model simple, fast, and explainable.
 
