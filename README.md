@@ -6,7 +6,8 @@ Env Secret Guard prevents accidental commits of secrets by scanning files for ex
 
 - Uses `.env` values as the source of truth (no regex guesswork).
 - Scans staged files for safe pre-commit protection.
-- Optional full-repo scans for CI.
+- Optional working tree scans for CI or local audits.
+- Optional git history scans (with `--since` support).
 - Human-friendly output plus `--plain` and `--json` modes.
 
 ## Install
@@ -25,10 +26,14 @@ pnpm dlx @philippb/env-secret-guard scan --staged
 
 ```bash
 secret-scan scan --staged
+secret-scan scan --working-tree
+secret-scan scan --history
+secret-scan scan --history --since "2 weeks ago"
 secret-scan scan --all
-secret-scan scan --all --include-untracked
 secret-scan scan --paths src apps/api
 ```
+
+`--all` runs staged, working tree, and history scans together. By default, `--working-tree` and `--all` include untracked files; use `--no-include-untracked` to limit to tracked files.
 
 ### Redaction
 
@@ -78,7 +83,17 @@ Example:
 {
   "envFileGlobs": [".env", ".env.*"],
   "envFileExcludes": [".env.example"],
-  "ignoreFileGlobs": ["**/node_modules/**", "**/.git/**"],
+  "ignoreFileGlobs": [
+    "**/node_modules/**",
+    "**/.git/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/.turbo/**",
+    "**/*.log",
+    "**/pnpm-lock.yaml"
+  ],
   "allowFileGlobs": ["**/__tests__/**"],
   "minSecretLength": 10,
   "commonValues": ["true", "false", "localhost"],
@@ -103,7 +118,7 @@ SECRET_SCAN_CONFIG=path/to/config.json secret-scan scan --staged
 ## Output Modes
 
 - Default: human-readable summary
-- `--plain`: one line per finding (`path<TAB>ENV_KEY<TAB>ENV_FILE`)
+- `--plain`: one line per finding (`path<TAB>ENV_KEY<TAB>ENV_FILE`). For `--history` or `--all`, `path` is prefixed with `staged:`, `working-tree:`, or `history:<short-sha>:`.
 - `--json`: structured output for scripts
 
 ## How It Works

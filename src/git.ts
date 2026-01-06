@@ -50,3 +50,70 @@ export function getTrackedFiles(cwd: string, includeUntracked: boolean): string[
 
   return tracked.concat(untracked);
 }
+
+export function getCommitShas(cwd: string, since?: string): string[] {
+  const repoRoot = getRepoRoot(cwd);
+  if (!repoRoot) {
+    throw new Error('Not inside a git repository.');
+  }
+
+  const args = ['rev-list', '--reverse'];
+  if (since) {
+    args.push('--since', since);
+  }
+  args.push('HEAD');
+
+  const output = runGit(args, repoRoot).trim();
+  if (!output) {
+    return [];
+  }
+  return output.split('\n').map((entry) => entry.trim()).filter(Boolean);
+}
+
+export function getCommitFiles(repoRoot: string, commit: string): string[] {
+  const output = runGit(
+    ['diff-tree', '--root', '--no-commit-id', '--name-only', '-r', '-z', commit],
+    repoRoot,
+  );
+  return splitNullSeparated(output).map((file) => path.resolve(repoRoot, file));
+}
+
+export function readStagedFile(repoRoot: string, filePath: string): string | null {
+  try {
+    const relativePath = path.isAbsolute(filePath)
+      ? path.relative(repoRoot, filePath)
+      : filePath;
+    const output = execFileSync('git', ['show', `:${relativePath}`], {
+      cwd: repoRoot,
+      encoding: 'utf-8',
+    });
+    if (output.includes('\u0000')) {
+      return null;
+    }
+    return output;
+  } catch {
+    return null;
+  }
+}
+
+export function readCommitFile(
+  repoRoot: string,
+  commit: string,
+  filePath: string,
+): string | null {
+  try {
+    const relativePath = path.isAbsolute(filePath)
+      ? path.relative(repoRoot, filePath)
+      : filePath;
+    const output = execFileSync('git', ['show', `${commit}:${relativePath}`], {
+      cwd: repoRoot,
+      encoding: 'utf-8',
+    });
+    if (output.includes('\u0000')) {
+      return null;
+    }
+    return output;
+  } catch {
+    return null;
+  }
+}

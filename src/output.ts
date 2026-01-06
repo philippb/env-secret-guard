@@ -16,6 +16,52 @@ export interface RenderedOutput {
   exitCode: number;
 }
 
+function shortCommit(commit?: string): string {
+  if (!commit) return '';
+  return commit.slice(0, 7);
+}
+
+function formatHumanLabel(summary: ScanSummary, filePath: string, source?: string, commit?: string) {
+  if (summary.mode === 'history') {
+    const short = shortCommit(commit);
+    return short ? `history ${short} ${filePath}` : `history ${filePath}`;
+  }
+
+  if (summary.mode === 'all') {
+    if (source === 'history') {
+      const short = shortCommit(commit);
+      return short ? `history ${short} ${filePath}` : `history ${filePath}`;
+    }
+    if (source === 'staged') {
+      return `staged ${filePath}`;
+    }
+    if (source === 'working-tree') {
+      return `working-tree ${filePath}`;
+    }
+  }
+
+  return filePath;
+}
+
+function formatPlainPath(summary: ScanSummary, filePath: string, source?: string, commit?: string) {
+  if (summary.mode !== 'history' && summary.mode !== 'all') {
+    return filePath;
+  }
+
+  if (source === 'history') {
+    const short = shortCommit(commit) || 'unknown';
+    return `history:${short}:${filePath}`;
+  }
+  if (source === 'staged') {
+    return `staged:${filePath}`;
+  }
+  if (source === 'working-tree') {
+    return `working-tree:${filePath}`;
+  }
+
+  return filePath;
+}
+
 function colorize(enabled: boolean) {
   if (!enabled) {
     return {
@@ -61,8 +107,14 @@ export function renderSummary(summary: ScanSummary, options: OutputOptions): Ren
   if (options.mode === 'plain') {
     const lines: string[] = [];
     for (const finding of summary.findings) {
+      const label = formatPlainPath(
+        summary,
+        finding.filePath,
+        finding.source,
+        finding.commit,
+      );
       for (const match of finding.matches) {
-        lines.push(`${finding.filePath}\t${match.key}\t${match.envFile}`);
+        lines.push(`${label}\t${match.key}\t${match.envFile}`);
       }
     }
     return {
@@ -90,7 +142,9 @@ export function renderSummary(summary: ScanSummary, options: OutputOptions): Ren
 
   for (const finding of summary.findings) {
     lines.push('');
-    lines.push(yellow(finding.filePath));
+    lines.push(
+      yellow(formatHumanLabel(summary, finding.filePath, finding.source, finding.commit)),
+    );
     for (const match of finding.matches) {
       lines.push(`  - ${match.key} (${match.envFile})`);
     }

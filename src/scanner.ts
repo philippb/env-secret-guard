@@ -4,7 +4,15 @@ import fg from 'fast-glob';
 import picomatch from 'picomatch';
 import { EnvValue, loadEnvSecrets } from './env';
 import { SecretScannerConfig } from './config';
-import { getStagedFiles, getTrackedFiles } from './git';
+import {
+  getCommitFiles,
+  getCommitShas,
+  getRepoRoot,
+  getStagedFiles,
+  getTrackedFiles,
+  readCommitFile,
+  readStagedFile,
+} from './git';
 
 export interface SecretMatch {
   key: string;
@@ -14,10 +22,12 @@ export interface SecretMatch {
 export interface Finding {
   filePath: string;
   matches: SecretMatch[];
+  source?: 'staged' | 'working-tree' | 'history';
+  commit?: string;
 }
 
 export interface ScanSummary {
-  mode: 'staged' | 'all' | 'paths';
+  mode: 'staged' | 'working-tree' | 'history' | 'all' | 'paths';
   rootDir: string;
   filesScanned: number;
   findings: Finding[];
@@ -30,6 +40,7 @@ export interface ScanOptions {
   config: Required<SecretScannerConfig>;
   includeUntracked?: boolean;
   paths?: string[];
+  since?: string;
 }
 
 function isBinaryFile(filePath: string, binaryExtensions: string[]): boolean {
@@ -75,7 +86,7 @@ function filterFileList(files: string[], config: Required<SecretScannerConfig>):
 export function scanFiles(
   files: string[],
   secrets: EnvValue[],
-  options: { config: Required<SecretScannerConfig> },
+  options: { config: Required<SecretScannerConfig>; readFile?: (filePath: string) => string | null },
 ): { filesScanned: number; findings: Finding[] } {
   const findings: Finding[] = [];
   let filesScanned = 0;
@@ -85,7 +96,7 @@ export function scanFiles(
       continue;
     }
 
-    const content = readTextFile(filePath);
+    const content = options.readFile ? options.readFile(filePath) : readTextFile(filePath);
     if (!content) {
       continue;
     }
@@ -115,13 +126,22 @@ export function scanStagedFiles(options: ScanOptions): ScanSummary {
   const secrets = loadEnvSecrets(options.cwd, options.config);
   const files = getStagedFiles(options.cwd);
   const filtered = filterFileList(files, options.config).filter((file) => !file.includes('.env'));
-  const result = scanFiles(filtered, secrets, { config: options.config });
+  const repoRoot = getRepoRoot(options.cwd);
+  if (!repoRoot) {
+    throw new Error('Not inside a git repository.');
+  }
+  const readFile = (filePath: string) => readStagedFile(repoRoot, filePath);
+  const result = scanFiles(filtered, secrets, { config: options.config, readFile });
+  const findings: Finding[] = result.findings.map((finding) => ({
+    ...finding,
+    source: 'staged' as const,
+  }));
 
   return {
     mode: 'staged',
     rootDir: options.cwd,
     filesScanned: result.filesScanned,
-    findings: result.findings,
+    findings,
     envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map((secret) => secret.file)).size,
     secretCount: secrets.length,
   };
@@ -132,14 +152,68 @@ export function scanAllFiles(options: ScanOptions): ScanSummary {
   const files = getTrackedFiles(options.cwd, Boolean(options.includeUntracked));
   const filtered = filterFileList(files, options.config).filter((file) => !file.includes('.env'));
   const result = scanFiles(filtered, secrets, { config: options.config });
+  const findings: Finding[] = result.findings.map((finding) => ({
+    ...finding,
+    source: 'working-tree' as const,
+  }));
+
+  return {
+    mode: 'working-tree',
+    rootDir: options.cwd,
+    filesScanned: result.filesScanned,
+    findings,
+    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map((secret) => secret.file)).size,
+    secretCount: secrets.length,
+  };
+}
+
+export function scanHistoryFiles(options: ScanOptions): ScanSummary {
+  const secrets = loadEnvSecrets(options.cwd, options.config);
+  const repoRoot = getRepoRoot(options.cwd);
+  if (!repoRoot) {
+    throw new Error('Not inside a git repository.');
+  }
+
+  const commits = getCommitShas(options.cwd, options.since);
+  let filesScanned = 0;
+  const findings: Finding[] = [];
+
+  for (const commit of commits) {
+    const files = getCommitFiles(repoRoot, commit);
+    const filtered = filterFileList(files, options.config).filter((file) => !file.includes('.env'));
+    const result = scanFiles(filtered, secrets, {
+      config: options.config,
+      readFile: (filePath: string) => readCommitFile(repoRoot, commit, filePath),
+    });
+
+    filesScanned += result.filesScanned;
+    for (const finding of result.findings) {
+      findings.push({ ...finding, source: 'history' as const, commit });
+    }
+  }
+
+  return {
+    mode: 'history',
+    rootDir: options.cwd,
+    filesScanned,
+    findings,
+    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map((secret) => secret.file)).size,
+    secretCount: secrets.length,
+  };
+}
+
+export function scanAllTargets(options: ScanOptions): ScanSummary {
+  const staged = scanStagedFiles(options);
+  const worktree = scanAllFiles(options);
+  const history = scanHistoryFiles(options);
 
   return {
     mode: 'all',
     rootDir: options.cwd,
-    filesScanned: result.filesScanned,
-    findings: result.findings,
-    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map((secret) => secret.file)).size,
-    secretCount: secrets.length,
+    filesScanned: staged.filesScanned + worktree.filesScanned + history.filesScanned,
+    findings: [...staged.findings, ...worktree.findings, ...history.findings],
+    envFileCount: staged.envFileCount,
+    secretCount: staged.secretCount,
   };
 }
 

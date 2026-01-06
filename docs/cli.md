@@ -35,11 +35,14 @@ Usage: secret-scan scan [options]
 Scan files for secrets
 
 Options:
-  --staged             Scan staged files (git)
-  --all                Scan all tracked files (git)
-  --include-untracked  Include untracked files with --all
-  --paths <paths...>   Scan specific paths or globs
-  -h, --help           display help for command
+  --staged                Scan staged files (git)
+  --working-tree          Scan working tree files (git tracked + untracked)
+  --history               Scan git history for secrets
+  --since <since>         Limit history scan using git --since
+  --all                   Scan staged, working tree, and history
+  --no-include-untracked  Exclude untracked files with --working-tree/--all
+  --paths <paths...>      Scan specific paths or globs
+  -h, --help              display help for command
 ```
 
 ## secret-scan redact
@@ -50,12 +53,12 @@ Usage: secret-scan redact [options]
 Replace secrets in files with safe placeholders
 
 Options:
-  --all                Redact all tracked files (git)
-  --include-untracked  Include untracked files with --all
-  --paths <paths...>   Redact specific paths or globs
-  --apply              Apply changes to files
-  --dry-run            Show what would change (default)
-  -h, --help           display help for command
+  --all                   Redact all files (git + untracked)
+  --no-include-untracked  Exclude untracked files with --all
+  --paths <paths...>      Redact specific paths or globs
+  --apply                 Apply changes to files
+  --dry-run               Show what would change (default)
+  -h, --help              display help for command
 ```
 
 ## secret-scan init
