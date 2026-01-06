@@ -48,6 +48,8 @@ Redaction does not rewrite git history. If secrets were committed previously, ro
 pnpm exec secret-scanner scan --staged
 ```
 
+For full setup instructions (Husky and plain Git hooks), see `docs/git-hooks.md`.
+
 ### Exit Codes
 
 - `0` No secrets found
