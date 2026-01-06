@@ -1,6 +1,6 @@
 {
   "name": "@philippb/env-secret-guard",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Prevent committing secrets by scanning files for values found in .env files.",
   "license": "MIT",
   "author": "Philipp",
