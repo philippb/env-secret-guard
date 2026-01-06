@@ -40,15 +40,19 @@ export function renderSummary(summary: ScanSummary, options: OutputOptions): Ren
 
   if (options.mode === 'json') {
     return {
-      stdout: JSON.stringify({
-        ok: summary.findings.length === 0,
-        mode: summary.mode,
-        rootDir: summary.rootDir,
-        filesScanned: summary.filesScanned,
-        envFileCount: summary.envFileCount,
-        secretCount: summary.secretCount,
-        findings: summary.findings,
-      }, null, 2),
+      stdout: JSON.stringify(
+        {
+          ok: summary.findings.length === 0,
+          mode: summary.mode,
+          rootDir: summary.rootDir,
+          filesScanned: summary.filesScanned,
+          envFileCount: summary.envFileCount,
+          secretCount: summary.secretCount,
+          findings: summary.findings,
+        },
+        null,
+        2,
+      ),
       stderr: '',
       exitCode: summary.findings.length === 0 ? 0 : 1,
     };

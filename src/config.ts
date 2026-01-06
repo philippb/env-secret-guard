@@ -87,17 +87,31 @@ function readJsonConfig(filePath: string): SecretScannerConfig {
   throw new Error(`Invalid config file: ${filePath}`);
 }
 
-function mergeConfig(base: Required<SecretScannerConfig>, override?: SecretScannerConfig): Required<SecretScannerConfig> {
+function mergeConfig(
+  base: Required<SecretScannerConfig>,
+  override?: SecretScannerConfig,
+): Required<SecretScannerConfig> {
   if (!override) return base;
   return {
     envFiles: Array.isArray(override.envFiles) ? override.envFiles : base.envFiles,
     envFileGlobs: Array.isArray(override.envFileGlobs) ? override.envFileGlobs : base.envFileGlobs,
-    envFileExcludes: Array.isArray(override.envFileExcludes) ? override.envFileExcludes : base.envFileExcludes,
-    ignoreFileGlobs: Array.isArray(override.ignoreFileGlobs) ? override.ignoreFileGlobs : base.ignoreFileGlobs,
-    allowFileGlobs: Array.isArray(override.allowFileGlobs) ? override.allowFileGlobs : base.allowFileGlobs,
-    minSecretLength: typeof override.minSecretLength === 'number' ? override.minSecretLength : base.minSecretLength,
+    envFileExcludes: Array.isArray(override.envFileExcludes)
+      ? override.envFileExcludes
+      : base.envFileExcludes,
+    ignoreFileGlobs: Array.isArray(override.ignoreFileGlobs)
+      ? override.ignoreFileGlobs
+      : base.ignoreFileGlobs,
+    allowFileGlobs: Array.isArray(override.allowFileGlobs)
+      ? override.allowFileGlobs
+      : base.allowFileGlobs,
+    minSecretLength:
+      typeof override.minSecretLength === 'number'
+        ? override.minSecretLength
+        : base.minSecretLength,
     commonValues: Array.isArray(override.commonValues) ? override.commonValues : base.commonValues,
-    binaryExtensions: Array.isArray(override.binaryExtensions) ? override.binaryExtensions : base.binaryExtensions,
+    binaryExtensions: Array.isArray(override.binaryExtensions)
+      ? override.binaryExtensions
+      : base.binaryExtensions,
   };
 }
 

@@ -2,8 +2,8 @@
 
 This guide shows two ways to run Secret Scanner before commits:
 
-1) Shared hooks with Husky (recommended for teams)
-2) Local-only hooks using `.git/hooks/pre-commit`
+1. Shared hooks with Husky (recommended for teams)
+2. Local-only hooks using `.git/hooks/pre-commit`
 
 ## Option 1: Husky (Recommended)
 

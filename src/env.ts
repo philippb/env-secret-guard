@@ -43,8 +43,11 @@ export function parseEnvFile(filePath: string): EnvValue[] {
   return envValues;
 }
 
-export function filterSecrets(envValues: EnvValue[], config: Required<SecretScannerConfig>): EnvValue[] {
-  const common = new Set(config.commonValues.map(value => value.toLowerCase()));
+export function filterSecrets(
+  envValues: EnvValue[],
+  config: Required<SecretScannerConfig>,
+): EnvValue[] {
+  const common = new Set(config.commonValues.map((value) => value.toLowerCase()));
   return envValues.filter(({ value }) => {
     if (!value || value.length < config.minSecretLength) return false;
     if (common.has(value.toLowerCase())) return false;
@@ -56,7 +59,7 @@ export function filterSecrets(envValues: EnvValue[], config: Required<SecretScan
 
 export function findEnvFiles(cwd: string, config: Required<SecretScannerConfig>): string[] {
   if (config.envFiles.length > 0) {
-    return config.envFiles.map(envFile => path.resolve(cwd, envFile));
+    return config.envFiles.map((envFile) => path.resolve(cwd, envFile));
   }
 
   const matches = fg.sync(config.envFileGlobs, {
@@ -67,7 +70,7 @@ export function findEnvFiles(cwd: string, config: Required<SecretScannerConfig>)
     ignore: config.envFileExcludes,
   });
 
-  return matches.map(match => path.resolve(cwd, match));
+  return matches.map((match) => path.resolve(cwd, match));
 }
 
 export function loadEnvSecrets(cwd: string, config: Required<SecretScannerConfig>): EnvValue[] {

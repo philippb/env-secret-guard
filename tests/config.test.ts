@@ -12,11 +12,7 @@ describe('config loader', () => {
   it('loads project config when present', () => {
     const dir = makeTempDir();
     const configPath = path.join(dir, 'secret-scanner.config.json');
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify({ minSecretLength: 20 }, null, 2),
-      'utf-8'
-    );
+    fs.writeFileSync(configPath, JSON.stringify({ minSecretLength: 20 }, null, 2), 'utf-8');
 
     const { config, sources } = loadConfig({ cwd: dir });
     expect(config.minSecretLength).toBe(20);

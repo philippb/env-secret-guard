@@ -57,7 +57,7 @@ function filterFileList(files: string[], config: Required<SecretScannerConfig>):
   const isIgnored = createMatcher(config.ignoreFileGlobs);
   const isAllowed = createMatcher(config.allowFileGlobs);
 
-  return files.filter(filePath => {
+  return files.filter((filePath) => {
     if (isAllowed(filePath)) {
       return false;
     }
@@ -81,7 +81,7 @@ function createRedactedValue(secret: EnvValue): string {
 function redactInFiles(
   files: string[],
   secrets: EnvValue[],
-  options: { config: Required<SecretScannerConfig>; apply: boolean }
+  options: { config: Required<SecretScannerConfig>; apply: boolean },
 ): { filesScanned: number; results: RedactionResult[] } {
   let filesScanned = 0;
   const results: RedactionResult[] = [];
@@ -122,7 +122,7 @@ function redactInFiles(
 }
 
 function stripEnvFiles(files: string[]): string[] {
-  return files.filter(file => !file.includes('.env'));
+  return files.filter((file) => !file.includes('.env'));
 }
 
 export function redactAllFiles(options: RedactOptions): RedactionSummary {
@@ -152,7 +152,7 @@ export function redactPaths(options: RedactOptions): RedactionSummary {
     ignore: options.config.ignoreFileGlobs,
     followSymbolicLinks: false,
   });
-  const absolute = expanded.map(match => path.resolve(options.cwd, match));
+  const absolute = expanded.map((match) => path.resolve(options.cwd, match));
   const filtered = filterFileList(stripEnvFiles(absolute), options.config);
   const result = redactInFiles(filtered, secrets, { config: options.config, apply: options.apply });
 

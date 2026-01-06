@@ -61,7 +61,7 @@ function filterFileList(files: string[], config: Required<SecretScannerConfig>):
   const isIgnored = createMatcher(config.ignoreFileGlobs);
   const isAllowed = createMatcher(config.allowFileGlobs);
 
-  return files.filter(filePath => {
+  return files.filter((filePath) => {
     if (isAllowed(filePath)) {
       return false;
     }
@@ -75,7 +75,7 @@ function filterFileList(files: string[], config: Required<SecretScannerConfig>):
 export function scanFiles(
   files: string[],
   secrets: EnvValue[],
-  options: { config: Required<SecretScannerConfig> }
+  options: { config: Required<SecretScannerConfig> },
 ): { filesScanned: number; findings: Finding[] } {
   const findings: Finding[] = [];
   let filesScanned = 0;
@@ -114,7 +114,7 @@ export function scanFiles(
 export function scanStagedFiles(options: ScanOptions): ScanSummary {
   const secrets = loadEnvSecrets(options.cwd, options.config);
   const files = getStagedFiles(options.cwd);
-  const filtered = filterFileList(files, options.config).filter(file => !file.includes('.env'));
+  const filtered = filterFileList(files, options.config).filter((file) => !file.includes('.env'));
   const result = scanFiles(filtered, secrets, { config: options.config });
 
   return {
@@ -122,7 +122,7 @@ export function scanStagedFiles(options: ScanOptions): ScanSummary {
     rootDir: options.cwd,
     filesScanned: result.filesScanned,
     findings: result.findings,
-    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map(secret => secret.file)).size,
+    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map((secret) => secret.file)).size,
     secretCount: secrets.length,
   };
 }
@@ -130,7 +130,7 @@ export function scanStagedFiles(options: ScanOptions): ScanSummary {
 export function scanAllFiles(options: ScanOptions): ScanSummary {
   const secrets = loadEnvSecrets(options.cwd, options.config);
   const files = getTrackedFiles(options.cwd, Boolean(options.includeUntracked));
-  const filtered = filterFileList(files, options.config).filter(file => !file.includes('.env'));
+  const filtered = filterFileList(files, options.config).filter((file) => !file.includes('.env'));
   const result = scanFiles(filtered, secrets, { config: options.config });
 
   return {
@@ -138,7 +138,7 @@ export function scanAllFiles(options: ScanOptions): ScanSummary {
     rootDir: options.cwd,
     filesScanned: result.filesScanned,
     findings: result.findings,
-    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map(secret => secret.file)).size,
+    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map((secret) => secret.file)).size,
     secretCount: secrets.length,
   };
 }
@@ -154,8 +154,10 @@ export function scanPaths(options: ScanOptions): ScanSummary {
     ignore: options.config.ignoreFileGlobs,
     followSymbolicLinks: false,
   });
-  const absolute = expanded.map(match => path.resolve(options.cwd, match));
-  const filtered = filterFileList(absolute, options.config).filter(file => !file.includes('.env'));
+  const absolute = expanded.map((match) => path.resolve(options.cwd, match));
+  const filtered = filterFileList(absolute, options.config).filter(
+    (file) => !file.includes('.env'),
+  );
   const result = scanFiles(filtered, secrets, { config: options.config });
 
   return {
@@ -163,7 +165,7 @@ export function scanPaths(options: ScanOptions): ScanSummary {
     rootDir: options.cwd,
     filesScanned: result.filesScanned,
     findings: result.findings,
-    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map(secret => secret.file)).size,
+    envFileCount: secrets.length === 0 ? 0 : new Set(secrets.map((secret) => secret.file)).size,
     secretCount: secrets.length,
   };
 }

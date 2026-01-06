@@ -16,7 +16,7 @@ describe('env parsing', () => {
     fs.writeFileSync(
       envPath,
       ['FOO=bar', 'SECRET_KEY="supersecretvalue"', 'PORT=3000'].join('\n'),
-      'utf-8'
+      'utf-8',
     );
 
     const values = parseEnvFile(envPath);

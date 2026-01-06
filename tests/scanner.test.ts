@@ -16,11 +16,7 @@ describe('scanner', () => {
 
     const srcDir = path.join(dir, 'src');
     fs.mkdirSync(srcDir);
-    fs.writeFileSync(
-      path.join(srcDir, 'app.ts'),
-      'const key = "secretvalue123";\n',
-      'utf-8'
-    );
+    fs.writeFileSync(path.join(srcDir, 'app.ts'), 'const key = "secretvalue123";\n', 'utf-8');
     fs.writeFileSync(path.join(dir, 'README.md'), '# Hello\n', 'utf-8');
 
     const summary = scanPaths({

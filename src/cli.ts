@@ -21,6 +21,13 @@ function readPackageVersion(): string {
   return '0.0.0';
 }
 
+function formatErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return 'Unexpected error.';
+}
+
 const program = new Command();
 
 program
@@ -68,7 +75,11 @@ program
       if (wantsStaged) {
         summary = scanStagedFiles({ cwd, config });
       } else if (wantsAll) {
-        summary = scanAllFiles({ cwd, config, includeUntracked: Boolean(options.includeUntracked) });
+        summary = scanAllFiles({
+          cwd,
+          config,
+          includeUntracked: Boolean(options.includeUntracked),
+        });
       } else if (wantsPaths) {
         summary = scanPaths({ cwd, config, paths: options.paths });
       } else {
@@ -97,8 +108,8 @@ program
       }
 
       process.exitCode = rendered.exitCode;
-    } catch (error: any) {
-      console.error(error?.message ?? 'Unexpected error.');
+    } catch (error: unknown) {
+      console.error(formatErrorMessage(error));
       process.exitCode = 1;
     }
   });
@@ -142,7 +153,12 @@ program
 
       const summary = wantsPaths
         ? redactPaths({ cwd, config, apply, paths: options.paths })
-        : redactAllFiles({ cwd, config, apply, includeUntracked: Boolean(options.includeUntracked) });
+        : redactAllFiles({
+            cwd,
+            config,
+            apply,
+            includeUntracked: Boolean(options.includeUntracked),
+          });
 
       if (globalOptions.json) {
         const payload = {
@@ -160,7 +176,9 @@ program
       }
 
       if (globalOptions.plain) {
-        const lines = summary.results.map(result => `${result.filePath}\t${result.keys.join(',')}`);
+        const lines = summary.results.map(
+          (result) => `${result.filePath}\t${result.keys.join(',')}`,
+        );
         if (lines.length > 0) {
           process.stdout.write(lines.join('\n') + '\n');
         }
@@ -189,8 +207,8 @@ program
       }
 
       process.exitCode = 1;
-    } catch (error: any) {
-      console.error(error?.message ?? 'Unexpected error.');
+    } catch (error: unknown) {
+      console.error(formatErrorMessage(error));
       process.exitCode = 1;
     }
   });
