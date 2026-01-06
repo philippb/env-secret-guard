@@ -23,6 +23,7 @@
     "dev": "tsx src/cli.ts",
     "docs": "tsx scripts/generate-docs.ts",
     "lint": "eslint . --ext .ts",
+    "prepare": "npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
